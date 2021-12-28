@@ -89,8 +89,6 @@ namespace Boliche
             {
                 IQuadro quadroAtual = quadros[i];
                 Pontuacao += quadroAtual.Pontuacao();
-                if (quadroAtual.BonusDoQuadro() == Bonus.Nenhum)
-                    continue;
                 Pontuacao += PontuacaoProximasJogadas(i, quadroAtual.BonusDoQuadro());
             }
             return Pontuacao;
@@ -98,27 +96,15 @@ namespace Boliche
 
         private int PontuacaoProximasJogadas(int i, Bonus b)
         {
-            if (i == 8)
+            if (b == Bonus.Nenhum)
+                return 0;
+            int pont = 0;
+            pont += quadros[i + 1].PontuacaoPrimeiraJogada();
+            if (b == Bonus.Strike)
             {
-                if (b == Bonus.Strike)
-                    return quadros[9].PontuacaoPrimeiraJogada() + quadros[9].PontuacaoSegundaJogada();
-                else
-                    return quadros[9].PontuacaoPrimeiraJogada();
+                pont += quadros[i + 1].TemProximaJogada() ? quadros[i + 1].PontuacaoSegundaJogada() : quadros[i + 2].PontuacaoPrimeiraJogada();
             }
-            else
-            {
-                if (b == Bonus.Strike)
-                {
-                    int pontuacao1 = quadros[i + 1].PontuacaoPrimeiraJogada();
-                    if (pontuacao1 == 10)
-                        return pontuacao1 + quadros[i + 2].PontuacaoPrimeiraJogada();
-                    return pontuacao1 + quadros[i + 1].PontuacaoSegundaJogada();
-                }
-                else
-                {
-                    return quadros[i + 1].PontuacaoPrimeiraJogada();
-                }
-            }
+            return pont;
         }
 
     }
@@ -126,15 +112,12 @@ namespace Boliche
     interface IQuadro
     {
         int Pontuacao();
-
         Bonus BonusDoQuadro();
-
         bool Disponivel();
-
         void AdicionarJogada(int pinos);
-
         int PontuacaoPrimeiraJogada();
         int PontuacaoSegundaJogada();
+        bool TemProximaJogada();
     }
 
     class QuadroBasico : IQuadro
@@ -208,6 +191,12 @@ namespace Boliche
 
         public int PontuacaoPrimeiraJogada() => PrimeiraJogada ?? 0;
         public int PontuacaoSegundaJogada() => SegundaJogada ?? 0;
+
+        public bool TemProximaJogada()
+        {
+            return PrimeiraJogada is not null && SegundaJogada is not null;
+        }
+
     }
 
     class QuadroFinal : IQuadro
@@ -294,5 +283,6 @@ namespace Boliche
         }
         public int PontuacaoPrimeiraJogada() => PrimeiraJogada ?? 0;
         public int PontuacaoSegundaJogada() => SegundaJogada ?? 0;
+        public bool TemProximaJogada() => true;
     }
 }
