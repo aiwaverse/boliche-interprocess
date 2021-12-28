@@ -6,34 +6,52 @@ namespace Boliche
     {
         static void Main(string[] args)
         {
-            JogoDeBoliche jogo = new();
-            jogo.Jogar(1);
-            jogo.Jogar(4);
-            jogo.Jogar(4);
-            jogo.Jogar(5);
-            jogo.Jogar(6);
-            jogo.Jogar(4);
-            jogo.Jogar(5);
-            jogo.Jogar(5);
-            jogo.Jogar(10);
-            jogo.Jogar(0);
-            jogo.Jogar(1);
-            jogo.Jogar(7);
-            jogo.Jogar(3);
-            jogo.Jogar(6);
-            jogo.Jogar(4);
-            jogo.Jogar(10);
-            jogo.Jogar(2);
-            jogo.Jogar(8);
-            jogo.Jogar(6);
-            Console.WriteLine(jogo.ObterPontuacao());
+            JogoDeBoliche jogoPerfeito = new();
+            jogoPerfeito.Jogar(10);
+            jogoPerfeito.Jogar(10);
+            jogoPerfeito.Jogar(10);
+            jogoPerfeito.Jogar(10);
+            jogoPerfeito.Jogar(10);
+            jogoPerfeito.Jogar(10);
+            jogoPerfeito.Jogar(10);
+            jogoPerfeito.Jogar(10);
+            jogoPerfeito.Jogar(10);
+            jogoPerfeito.Jogar(10);
+            jogoPerfeito.Jogar(10);
+            jogoPerfeito.Jogar(10);
+
+            Console.WriteLine($"Jogo Perfeito: {jogoPerfeito.ObterPontuacao()}");
+
+            JogoDeBoliche jogoExemplo = new();
+            jogoExemplo.Jogar(1);
+            jogoExemplo.Jogar(4);
+            jogoExemplo.Jogar(4);
+            jogoExemplo.Jogar(5);
+            jogoExemplo.Jogar(6);
+            jogoExemplo.Jogar(4);
+            jogoExemplo.Jogar(5);
+            jogoExemplo.Jogar(5);
+            jogoExemplo.Jogar(10);
+            jogoExemplo.Jogar(0);
+            jogoExemplo.Jogar(1);
+            jogoExemplo.Jogar(7);
+            jogoExemplo.Jogar(3);
+            jogoExemplo.Jogar(6);
+            jogoExemplo.Jogar(4);
+            jogoExemplo.Jogar(10);
+            jogoExemplo.Jogar(2);
+            jogoExemplo.Jogar(8);
+            jogoExemplo.Jogar(6);
+
+            Console.WriteLine($"Jogo Exemplo: {jogoExemplo.ObterPontuacao()}");
+
         }
     }
     enum Bonus
     {
-        Strike,
-        Spare,
-        Nenhum
+        Strike = 2,
+        Spare = 1,
+        Nenhum = 0
     }
     class JogoDeBoliche
     {
@@ -67,22 +85,40 @@ namespace Boliche
 
         public int ObterPontuacao()
         {
-            Bonus bonusAContabilizar = Bonus.Nenhum;
             for (int i = 0; i < quadros.Length; ++i)
             {
-                IQuadro quadro = quadros[i];
-                Pontuacao += quadro.Pontuacao();
-                if (bonusAContabilizar == Bonus.Strike)
-                {
-                    Pontuacao += quadro.PontuacaoPrimeiraJogada();
-                    Pontuacao += quadro.PontuacaoSegundaJogada();
-                }
-                if (bonusAContabilizar == Bonus.Spare)
-                    Pontuacao += quadro.PontuacaoPrimeiraJogada();
-
-                bonusAContabilizar = quadro.BonusDoQuadro();
+                IQuadro quadroAtual = quadros[i];
+                Pontuacao += quadroAtual.Pontuacao();
+                if (quadroAtual.BonusDoQuadro() == Bonus.Nenhum)
+                    continue;
+                Pontuacao += PontuacaoProximasJogadas(i, quadroAtual.BonusDoQuadro());
             }
             return Pontuacao;
+        }
+
+        private int PontuacaoProximasJogadas(int i, Bonus b)
+        {
+            if (i == 8)
+            {
+                if (b == Bonus.Strike)
+                    return quadros[9].PontuacaoPrimeiraJogada() + quadros[9].PontuacaoSegundaJogada();
+                else
+                    return quadros[9].PontuacaoPrimeiraJogada();
+            }
+            else
+            {
+                if (b == Bonus.Strike)
+                {
+                    int pontuacao1 = quadros[i + 1].PontuacaoPrimeiraJogada();
+                    if (pontuacao1 == 10)
+                        return pontuacao1 + quadros[i + 2].PontuacaoPrimeiraJogada();
+                    return pontuacao1 + quadros[i + 1].PontuacaoSegundaJogada();
+                }
+                else
+                {
+                    return quadros[i + 1].PontuacaoPrimeiraJogada();
+                }
+            }
         }
 
     }
@@ -240,7 +276,7 @@ namespace Boliche
                 return true;
             if (SegundaJogada is null)
                 return true;
-            if (PrimeiraJogada == 10 && TerceiraJogada is not null)
+            if (PrimeiraJogada == 10 && TerceiraJogada is null)
                 return true;
             if ((PrimeiraJogada + SegundaJogada == 10) && TerceiraJogada is null)
                 return true;
